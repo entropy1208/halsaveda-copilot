@@ -2,100 +2,66 @@
 
 AI-powered Swedish healthcare navigation assistant using RAG (Retrieval-Augmented Generation).
 
+🌐 **Live Demo:** https://halsaveda.app
+
+## Quick Links
+
+- 🌐 **Live Application:** https://halsaveda.app
+- 📡 **API Endpoint:** https://api.halsaveda.app
+- 📚 **API Documentation:** https://api.halsaveda.app/docs
+- 💻 **Source Code:** https://github.com/entropy1208/halsaveda-copilot
+
 ## Features
 
-- 🤖 Semantic search across Swedish healthcare information (1177.se)
-- 🔍 RAG-based question answering with source citations
+- 🤖 AI-powered Q&A with source citations
+- 🔍 Semantic search across Swedish healthcare information (1177.se)
 - 🌐 Cross-language support (English queries → Swedish content)
-- 💬 Beautiful chat interface
-- ⚡ Fast API responses
+- 💬 Beautiful, responsive chat interface
+- ⚡ Real-time responses with GPT-4o-mini
 
 ## Tech Stack
 
 **Backend:**
-- Python 3.11
-- FastAPI
-- OpenAI (embeddings + GPT-4o-mini)
-- Pinecone (vector database)
+- FastAPI (Python)
+- OpenAI API (text-embedding-3-small + GPT-4o-mini)
+- Pinecone Vector Database
 - BeautifulSoup (web scraping)
+- Deployed on Railway
 
 **Frontend:**
-- Next.js 15
-- TypeScript
+- Next.js 15 + TypeScript
 - Tailwind CSS
-- React
+- Deployed on Vercel
 
 ## Architecture
 ```
-User Query → Frontend (Next.js)
-    ↓
-Backend API (FastAPI)
-    ↓
-Query Engine → Pinecone Vector Search
-    ↓
-Retrieved Chunks → GPT-4o-mini
-    ↓
-Answer with Citations → User
+User Query → Next.js Frontend (halsaveda.app)
+              ↓
+         FastAPI Backend (api.halsaveda.app)
+              ↓
+         Semantic Search (Pinecone)
+              ↓
+         GPT-4o-mini (OpenAI)
+              ↓
+         Cited Answer → User
 ```
 
 ## Local Development
 
-### Prerequisites
-- Python 3.11+
-- Node.js 20+
-- OpenAI API key
-- Pinecone API key
+See [DEVELOPMENT.md](DEVELOPMENT.md) for setup instructions.
 
-### Backend Setup
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+## Project Status
 
-# Create .env file
-echo "OPENAI_API_KEY=your_key" > .env
-echo "PINECONE_API_KEY=your_key" >> .env
+✅ MVP deployed and functional
+🔄 Scaling data coverage (currently 3 pages, expanding to 200+)
+📋 Roadmap: Document upload, conversation history, multi-language UI
 
-# Run server
-python api/server.py
-```
+## Built By
 
-Backend runs on http://localhost:8000
-
-### Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs on http://localhost:3000
-
-## Project Structure
-```
-halsaveda-copilot/
-├── backend/
-│   ├── scraper/          # Web scraping
-│   ├── vectordb/         # Embeddings & search
-│   ├── api/              # FastAPI server
-│   └── data/             # Scraped content (not in git)
-├── frontend/
-│   ├── app/              # Next.js app
-│   └── public/           # Static assets
-└── README.md
-```
-
-## Deployment
-
-- Backend: Railway
-- Frontend: Vercel
-- Domain: halsaveda.app
+Kush - AI/ML Engineer
+- 🌐 Live Demo: https://halsaveda.app
+- 💼 GitHub: https://github.com/entropy1208
 
 ## License
 
 MIT
-
-## Author
-
-Built by Kush as a learning project in AI/ML engineering.
