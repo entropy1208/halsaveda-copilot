@@ -39,3 +39,4 @@ yarn-error.log*
 .pytest_cache/
 coverage/
 .coverage
+data/stats.json
