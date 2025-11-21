@@ -23,6 +23,7 @@ export default function Home() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [totalQueries, setTotalQueries] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Example questions for better UX
@@ -37,6 +38,23 @@ export default function Home() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Fetch usage stats on mount
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}/api/stats/usage`);
+        const data = await response.json();
+        setTotalQueries(data.total_queries);
+      } catch (error) {
+        // Silently fail - stats are not critical
+        console.log('Could not fetch stats');
+      }
+    };
+    
+    fetchStats();
+  }, []);
 
   // Clear conversation history
   const handleClearChat = () => {
@@ -100,6 +118,11 @@ export default function Home() {
           sources: data.sources
         }]);
         
+        // Update query count after successful query
+        if (totalQueries !== null) {
+          setTotalQueries(totalQueries + 1);
+        }
+        
         break; // Success! Exit retry loop
 
       } catch (error) {
@@ -139,12 +162,19 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header with Clear Chat button */}
+      {/* Header with Clear Chat button and Query Count */}
       <header className="bg-white border-b px-6 py-4 shadow-sm">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">🏥 HälsaVeda Copilot</h1>
-            <p className="text-sm text-gray-600">AI-powered Swedish healthcare assistant</p>
+            <p className="text-sm text-gray-600">
+              AI-powered Swedish healthcare assistant
+              {totalQueries && totalQueries > 0 && (
+                <span className="ml-2 text-gray-500">
+                  • {totalQueries.toLocaleString()} queries answered
+                </span>
+              )}
+            </p>
           </div>
           {messages.length > 1 && (
             <button
