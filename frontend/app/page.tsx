@@ -25,6 +25,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // EXAMPLE QUESTIONS
+  const exampleQuestions = [
+    "What should I do for a cold?",
+    "When should I see a doctor for fever?",
+    "How do I treat a sore throat?",
+    "Hur behandlar man förkylning?"
+  ];
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -34,8 +42,16 @@ export default function Home() {
     if (!input.trim() || loading) return;
 
     const userMessage = input.trim();
+    await sendMessage(userMessage);
+  };
+
+  const handleExampleClick = async (question: string) => {
+    setInput(question);
+    await sendMessage(question);
+  };
+
+  const sendMessage = async (userMessage: string) => {
     setInput('');
-    
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setLoading(true);
 
@@ -96,6 +112,26 @@ export default function Home() {
               </div>
             </div>
           ))}
+          
+          {/* SHOW EXAMPLE QUESTIONS WHEN CHAT IS EMPTY */}
+          {messages.length === 1 && !loading && (
+            <div className="flex justify-center">
+              <div className="max-w-2xl w-full">
+                <p className="text-sm text-gray-600 mb-3 text-center">Try asking:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {exampleQuestions.map((question, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleExampleClick(question)}
+                      className="text-left px-4 py-3 bg-white rounded-lg shadow-sm hover:shadow-md transition border border-gray-200 hover:border-blue-400 text-gray-700 text-sm"
+                    >
+                      💬 {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
           
           {loading && (
             <div className="flex justify-start">
