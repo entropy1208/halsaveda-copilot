@@ -154,7 +154,7 @@ if __name__ == "__main__":
     
     # Use improved scraper data
     print("\n📂 Loading improved scraped data...")
-    chunks = chunker.process_documents('data/improved_scraped_data.json')
+    chunks = chunker.process_documents('data/tier2_top200_scraped_20251122.json')
     
     print(f"\n📊 Statistics:")
     print(f"   Total chunks: {len(chunks)}")
