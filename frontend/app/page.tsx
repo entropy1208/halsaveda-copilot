@@ -274,21 +274,21 @@ export default function Home() {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t px-4 py-4">
+      <div className="bg-white border-t px-6 py-8">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 items-center">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about Swedish healthcare..."
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="flex-1 rounded-xl border-2 border-gray-300 px-8 py-6 text-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 shadow-sm"
               disabled={loading}
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+              className="bg-blue-600 text-white px-12 py-6 rounded-xl text-xl font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-lg hover:shadow-xl"
             >
               {loading ? 'Sending...' : 'Send'}
             </button>
