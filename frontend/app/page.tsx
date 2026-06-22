@@ -2,17 +2,17 @@
 
 import { useState, useRef, useEffect } from 'react';
 
+interface Source {
+  title: string;
+  url: string;
+  score: number;
+}
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   sources?: Source[];
   timestamp?: string;
-}
-
-interface Source {
-  title: string;
-  url: string;
-  score: number;
 }
 
 export default function Home() {
@@ -40,8 +40,8 @@ export default function Home() {
         const response = await fetch(`${apiUrl}/api/stats/usage`);
         const data = await response.json();
         setTotalQueries(data.total_queries);
-      } catch (error) {
-        console.log('Stats unavailable');
+      } catch (e) {
+        // Stats unavailable
       }
     };
     fetchStats();
@@ -55,14 +55,17 @@ export default function Home() {
 
   const handleExampleClick = async (question: string) => {
     if (loading) return;
-    setInput(question);
     await sendMessage(question);
   };
 
   const sendMessage = async (userMessage: string) => {
     setInput('');
     
-    const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const timestamp = new Date().toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    
     setMessages(prev => [...prev, {
       role: 'user',
       content: userMessage,
@@ -85,7 +88,9 @@ export default function Home() {
 
       clearTimeout(timeoutId);
 
-      if (!response.ok) throw new Error('API error');
+      if (!response.ok) {
+        throw new Error('API error');
+      }
 
       const data = await response.json();
       
@@ -117,42 +122,42 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-white">
-      {/* Header */}
+      {/* HEADER */}
       <header className="border-b border-gray-200 bg-white sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold text-lg">
-              H
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
+              <span className="text-white font-bold">H</span>
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">HälsaVeda</h1>
-              <p className="text-xs text-gray-600">Swedish Healthcare AI</p>
+              <p className="text-xs text-gray-600">Healthcare Assistant</p>
             </div>
           </div>
           
           {totalQueries !== null && (
             <div className="text-right">
-              <div className="text-2xl font-bold text-gray-900">{totalQueries.toLocaleString()}</div>
-              <div className="text-xs text-gray-600">queries answered</div>
+              <div className="text-2xl font-bold text-gray-900">{totalQueries}</div>
+              <div className="text-xs text-gray-600">answered</div>
             </div>
           )}
         </div>
       </header>
 
-      {/* Main Chat Area */}
+      {/* CHAT AREA */}
       <div className="flex-1 overflow-y-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           
-          {/* Welcome State */}
+          {/* WELCOME */}
           {messages.length === 0 && (
             <div className="space-y-8 py-12 text-center">
               <div className="space-y-4">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-100">
-                  <span className="text-4xl">🏥</span>
-                </div>
-                <h2 className="text-4xl font-bold text-gray-900">Healthcare at your fingertips</h2>
+                <div className="inline-block text-4xl">🏥</div>
+                <h2 className="text-4xl font-bold text-gray-900">
+                  Healthcare at your fingertips
+                </h2>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Ask anything about Swedish healthcare. Get accurate, sourced answers instantly.
+                  Ask anything about Swedish healthcare
                 </p>
               </div>
 
@@ -161,75 +166,39 @@ export default function Home() {
                   <button
                     key={i}
                     onClick={() => handleExampleClick(q)}
-                    className="text-left p-4 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all"
+                    className="p-4 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition text-left"
                   >
                     <div className="text-sm font-medium text-gray-900">{q}</div>
-                    <div className="text-xs text-gray-500 mt-1">Ask this</div>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Messages */}
-          <div className="space-y-6">
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className="max-w-2xl">
-                  <div className={`rounded-2xl px-6 py-4 ${
-                    msg.role === 'user'
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-900'
-                  }`}>
-                    <div className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</div>
-                  </div>
-                  
-                  <div className="text-xs text-gray-500 mt-2 px-3">{msg.timestamp}</div>
+          {/* MESSAGES */}
+          {messages.map((msg, i) => (
+            <MessageBubble key={i} message={msg} />
+          ))}
 
-                  {msg.sources && msg.sources.length > 0 && (
-                    <div className="mt-4 space-y-2">
-                      <div className="text-xs font-semibold text-gray-700 px-3">📚 Sources</div>
-                      {msg.sources.map((src, idx) => (
-                        
-                          key={idx}
-                          href={src.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
-                        >
-                          <div className="text-xs font-medium text-blue-600 hover:text-blue-700">
-                            [{idx + 1}] {src.title}
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            Relevance: {Math.round(src.score * 100)}%
-                          </div>
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
+          {/* LOADING */}
+          {loading && (
+            <div className="flex justify-start mb-6">
+              <div className="bg-gray-100 rounded-2xl px-6 py-4 flex gap-2">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
               </div>
-            ))}
+            </div>
+          )}
 
-            {loading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-2xl px-6 py-4 flex gap-2">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Input Area */}
+      {/* INPUT */}
       <div className="border-t border-gray-200 bg-white px-4 py-6">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-          <div className="flex gap-3">
+          <div className="flex gap-3 mb-3">
             <input
               type="text"
               value={input}
@@ -247,10 +216,72 @@ export default function Home() {
               Send
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-3 text-center">
-            Powered by OpenAI · Data from 1177.se
+          <p className="text-xs text-gray-500 text-center">
+            Powered by OpenAI · 1177.se
           </p>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function MessageBubble({ message }: { message: Message }) {
+  const isUser = message.role === 'user';
+
+  return (
+    <div className={`flex mb-6 ${isUser ? 'justify-end' : 'justify-start'}`}>
+      <div className="max-w-2xl">
+        {/* Message */}
+        <div className={`rounded-2xl px-6 py-4 ${
+          isUser ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'
+        }`}>
+          <div className="text-sm leading-relaxed whitespace-pre-wrap">
+            {message.content}
+          </div>
+        </div>
+
+        {/* Timestamp */}
+        <div className="text-xs text-gray-500 mt-2 px-3">
+          {message.timestamp}
+        </div>
+
+        {/* Sources */}
+        {message.sources && message.sources.length > 0 && (
+          <div className="mt-4">
+            <div className="text-xs font-semibold text-gray-700 px-3 mb-2">
+              📚 Sources
+            </div>
+            <SourceList sources={message.sources} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SourceList({ sources }: { sources: Source[] }) {
+  return (
+    <div className="space-y-2">
+      {sources.map((src, idx) => (
+        <SourceItem key={idx} source={src} index={idx} />
+      ))}
+    </div>
+  );
+}
+
+function SourceItem({ source, index }: { source: Source; index: number }) {
+  return (
+    <div className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition">
+      <a 
+        href={source.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs font-medium text-blue-600 hover:text-blue-700 block"
+      >
+        [{index + 1}] {source.title}
+      </a>
+      <div className="text-xs text-gray-500 mt-1">
+        Relevance: {Math.round(source.score * 100)}%
       </div>
     </div>
   );
