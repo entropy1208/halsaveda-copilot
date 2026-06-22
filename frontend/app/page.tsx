@@ -131,7 +131,6 @@ export default function Home() {
           {messages.length === 0 && (
             <div className="space-y-8 py-12 text-center">
               <div className="space-y-4">
-                <div className="inline-block text-4xl">🏥</div>
                 <h2 className="text-5xl font-bold text-gray-900">
                   HälsaVeda
                 </h2>
