@@ -162,7 +162,7 @@ export default function Home() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about Swedish healthcare..."
+              placeholder="Write a question..."
               className="flex-1 rounded-2xl border border-gray-300 px-6 py-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               disabled={loading}
               autoFocus
