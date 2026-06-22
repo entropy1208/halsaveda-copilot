@@ -22,13 +22,6 @@ export default function Home() {
   const [totalQueries, setTotalQueries] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const exampleQuestions = [
-    "What should I do for a cold?",
-    "When should I see a doctor for fever?",
-    "How do I treat a sore throat?",
-    "Hur behandlar man förkylning?"
-  ];
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -137,18 +130,6 @@ export default function Home() {
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                   Ask anything about Swedish healthcare
                 </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                {exampleQuestions.map((q, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleExampleClick(q)}
-                    className="p-4 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition text-left"
-                  >
-                    <div className="text-sm font-medium text-gray-900">{q}</div>
-                  </button>
-                ))}
               </div>
             </div>
           )}
