@@ -195,9 +195,6 @@ export default function Home() {
               Send
             </button>
           </div>
-          <p className="text-xs text-gray-500 text-center">
-            Powered by OpenAI · 1177.se
-          </p>
         </form>
       </div>
     </div>
