@@ -122,27 +122,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-white">
-      {/* HEADER */}
-      <header className="border-b border-gray-200 bg-white sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
-              <span className="text-white font-bold">H</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">HälsaVeda</h1>
-              <p className="text-xs text-gray-600">Healthcare Assistant</p>
-            </div>
-          </div>
-          
-          {totalQueries !== null && (
-            <div className="text-right">
-              <div className="text-2xl font-bold text-gray-900">{totalQueries}</div>
-              <div className="text-xs text-gray-600">answered</div>
-            </div>
-          )}
-        </div>
-      </header>
 
       {/* CHAT AREA */}
       <div className="flex-1 overflow-y-auto px-4 py-8">
@@ -153,8 +132,8 @@ export default function Home() {
             <div className="space-y-8 py-12 text-center">
               <div className="space-y-4">
                 <div className="inline-block text-4xl">🏥</div>
-                <h2 className="text-4xl font-bold text-gray-900">
-                  Healthcare at your fingertips
+                <h2 className="text-5xl font-bold text-gray-900">
+                  HälsaVeda
                 </h2>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                   Ask anything about Swedish healthcare
