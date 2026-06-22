@@ -6,6 +6,7 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   sources?: Source[];
+  timestamp?: string;
 }
 
 interface Source {
@@ -15,18 +16,13 @@ interface Source {
 }
 
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: 'Hej! I\'m HälsaVeda Copilot, your Swedish healthcare assistant. Ask me anything about healthcare in Sweden!'
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [totalQueries, setTotalQueries] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Example questions for better UX
   const exampleQuestions = [
     "What should I do for a cold?",
     "When should I see a doctor for fever?",
@@ -34,12 +30,12 @@ export default function Home() {
     "Hur behandlar man förkylning?"
   ];
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Fetch usage stats on mount
+  // Fetch stats
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -48,7 +44,6 @@ export default function Home() {
         const data = await response.json();
         setTotalQueries(data.total_queries);
       } catch (error) {
-        // Silently fail - stats are not critical
         console.log('Could not fetch stats');
       }
     };
@@ -56,17 +51,7 @@ export default function Home() {
     fetchStats();
   }, []);
 
-  // Clear conversation history
-  const handleClearChat = () => {
-    if (confirm('Clear conversation history?')) {
-      setMessages([{
-        role: 'assistant',
-        content: 'Hej! I\'m HälsaVeda Copilot, your Swedish healthcare assistant. Ask me anything about healthcare in Sweden!'
-      }]);
-    }
-  };
-
-  // Handle form submission
+  // Handle submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
@@ -75,17 +60,23 @@ export default function Home() {
     await sendMessage(userMessage);
   };
 
-  // Handle example question clicks
+  // Handle example click
   const handleExampleClick = async (question: string) => {
     if (loading) return;
     setInput(question);
     await sendMessage(question);
   };
 
-  // Send message with retry logic and better error handling
+  // Send message
   const sendMessage = async (userMessage: string) => {
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    
+    const newMessage: Message = {
+      role: 'user',
+      content: userMessage,
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    };
+    setMessages(prev => [...prev, newMessage]);
     setLoading(true);
 
     const maxRetries = 2;
@@ -95,7 +86,7 @@ export default function Home() {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         const response = await fetch(`${apiUrl}/api/chat`, {
           method: 'POST',
@@ -115,21 +106,20 @@ export default function Home() {
         setMessages(prev => [...prev, {
           role: 'assistant',
           content: data.answer,
-          sources: data.sources
+          sources: data.sources,
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
         }]);
         
-        // Update query count after successful query
         if (totalQueries !== null) {
           setTotalQueries(totalQueries + 1);
         }
         
-        break; // Success! Exit retry loop
+        break;
 
       } catch (error) {
         attempt++;
         
         if (attempt > maxRetries) {
-          // Final failure after retries
           let errorMessage = '❌ Sorry, I encountered an error. ';
           
           if (error instanceof Error) {
@@ -137,21 +127,17 @@ export default function Home() {
               errorMessage += 'The request took too long. Please try a simpler question.';
             } else if (error.message.includes('Failed to fetch')) {
               errorMessage += 'Cannot connect to the server. Please check your internet connection.';
-            } else if (error.message.includes('500')) {
-              errorMessage += 'Server error. Please try again in a moment.';
             } else {
               errorMessage += 'Please try again.';
             }
-          } else {
-            errorMessage += 'Please try again.';
           }
           
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: errorMessage
+            content: errorMessage,
+            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
           }]);
         } else {
-          // Wait before retry
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
@@ -161,138 +147,168 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header with Clear Chat button and Query Count */}
-      <header className="bg-white border-b px-6 py-4 shadow-sm">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">🏥 HälsaVeda Copilot</h1>
-            <p className="text-sm text-gray-600">
-              AI-powered Swedish healthcare assistant
-              {totalQueries && totalQueries > 0 && (
-                <span className="ml-2 text-gray-500">
-                  • {totalQueries.toLocaleString()} queries answered
-                </span>
-              )}
-            </p>
+    <div className="flex flex-col h-screen bg-white">
+      {/* Header */}
+      <header className="border-b border-gray-200 bg-white sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
+                <span className="text-white text-lg font-bold">H</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">HälsaVeda</h1>
+                <p className="text-xs text-gray-600">Swedish Healthcare Assistant</p>
+              </div>
+            </div>
+            
+            {totalQueries !== null && (
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900">{totalQueries.toLocaleString()}</div>
+                  <div className="text-xs text-gray-600">queries answered</div>
+                </div>
+              </div>
+            )}
           </div>
-          {messages.length > 1 && (
-            <button
-              onClick={handleClearChat}
-              className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition flex items-center gap-2"
-              title="Clear conversation"
-            >
-              <span>🗑️</span>
-              <span className="hidden sm:inline">Clear Chat</span>
-            </button>
-          )}
         </div>
       </header>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {messages.map((message, index) => (
-            <div 
-              key={index} 
-              className={message.role === 'user' ? 'flex justify-end' : 'flex justify-start'}
-            >
-              <div 
-                className={
-                  message.role === 'user' 
-                    ? 'max-w-3xl rounded-lg px-6 py-4 bg-blue-600 text-white' 
-                    : 'max-w-3xl rounded-lg px-6 py-4 bg-white text-gray-900 shadow-md'
-                }
-              >
-                <div className="whitespace-pre-wrap">{message.content}</div>
-                
-                {/* Sources */}
-                {message.sources && message.sources.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <p className="text-sm font-semibold text-gray-700 mb-2">📚 Sources:</p>
-                    <div className="space-y-1">
-                      {message.sources.map((source, idx) => (
-                        <div key={idx} className="text-sm">
-                          <a 
-                            href={source.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-blue-600 hover:underline font-medium"
-                          >
-                            [{idx + 1}] {source.title}
-                          </a>
-                          <span className="text-gray-500 ml-2">
-                            (relevance: {Math.round(source.score * 100)}%)
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-          
-          {/* Example Questions - Show when chat is empty */}
-          {messages.length === 1 && !loading && (
-            <div className="flex justify-center">
-              <div className="max-w-2xl w-full">
-                <p className="text-sm text-gray-600 mb-3 text-center font-medium">
-                  Try asking:
+      {/* Chat Area */}
+      <div className="flex-1 overflow-y-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Welcome State */}
+          {messages.length === 0 && (
+            <div className="space-y-8 py-12">
+              {/* Welcome Hero */}
+              <div className="text-center space-y-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 mb-4">
+                  <span className="text-4xl">🏥</span>
+                </div>
+                <h2 className="text-4xl font-bold text-gray-900">
+                  Healthcare at your fingertips
+                </h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  Ask anything about Swedish healthcare. Get accurate, sourced answers instantly.
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {exampleQuestions.map((question, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleExampleClick(question)}
-                      className="text-left px-4 py-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-blue-400 text-gray-700 text-sm hover:bg-blue-50"
-                    >
-                      <span className="mr-2">💬</span>
+              </div>
+
+              {/* Example Questions Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
+                {exampleQuestions.map((question, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleExampleClick(question)}
+                    className="text-left p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group"
+                  >
+                    <div className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
                       {question}
-                    </button>
-                  ))}
-                </div>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">Ask this question</div>
+                  </button>
+                ))}
               </div>
             </div>
           )}
-          
-          {/* Loading indicator */}
-          {loading && (
-            <div className="flex justify-start">
-              <div className="bg-white rounded-lg px-6 py-4 shadow-md">
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+
+          {/* Messages */}
+          <div className="space-y-6">
+            {messages.map((message, index) => (
+              <div 
+                key={index}
+                className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+              >
+                <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-2xl`}>
+                    {/* Message Container */}
+                    <div className={`rounded-2xl px-6 py-4 ${
+                      message.role === 'user'
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-gray-100 text-gray-900'
+                    }`}>
+                      <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                        {message.content}
+                      </div>
+                    </div>
+
+                    {/* Timestamp */}
+                    <div className="text-xs text-gray-500 mt-2 px-3">
+                      {message.timestamp}
+                    </div>
+
+                    {/* Sources */}
+                    {message.sources && message.sources.length > 0 && (
+                      <div className="mt-4 space-y-2">
+                        <div className="text-xs font-semibold text-gray-700 px-3">📚 Sources</div>
+                        <div className="space-y-2">
+                          {message.sources.map((source, idx) => (
+                            
+                              key={idx}
+                              href={source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group"
+                            >
+                              <div className="text-xs font-medium text-blue-600 group-hover:text-blue-700">
+                                [{idx + 1}] {source.title}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                Relevance: {Math.round(source.score * 100)}%
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          
-          <div ref={messagesEndRef} />
+            ))}
+
+            {/* Loading State */}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 rounded-2xl px-6 py-4">
+                  <div className="flex space-x-2">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
         </div>
       </div>
 
-      {/* Input */}
-      <div className="bg-white border-t px-6 py-8">
+      {/* Input Area */}
+      <div className="border-t border-gray-200 bg-white px-4 py-6">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-          <div className="flex space-x-4 items-center">
+          <div className="flex gap-3">
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about Swedish healthcare..."
-              className="flex-1 rounded-xl border-2 border-gray-300 px-8 py-6 text-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 shadow-sm"
+              className="flex-1 rounded-2xl border border-gray-300 px-6 py-4 text-base placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               disabled={loading}
+              autoFocus
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="bg-blue-600 text-white px-12 py-6 rounded-xl text-xl font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-lg hover:shadow-xl"
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {loading ? 'Sending...' : 'Send'}
+              <span>Send</span>
+              <span className="text-lg">→</span>
             </button>
           </div>
+          <p className="text-xs text-gray-500 mt-3 text-center">
+            Powered by OpenAI • Data from 1177.se
+          </p>
         </form>
       </div>
     </div>
